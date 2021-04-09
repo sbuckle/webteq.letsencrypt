@@ -1,0 +1,21 @@
+{% if plugin is defined %}
+configurator = {{ plugin }}
+{% endif %}
+
+{% if authenticator is defined %}
+authenticator = {{ authenticator }}
+{% endif %}
+
+{% if installer is defined %}
+installer = {{ installer }}
+{% endif %}
+
+email = {{ email | mandatory }}
+
+{% if domains is defined %}
+domains = {{ domains | join(", ") }}
+{% endif %}
+
+{% if webroot_path is defined %}
+webroot-path = {{ webroot_path }}
+{% endif %}

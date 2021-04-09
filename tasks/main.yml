@@ -1,0 +1,44 @@
+---
+- name: (Debian/Ubuntu) Install dependencies
+  #apt:
+  #  name:
+  #    - certbot
+  #    - python3-certbot-nginx
+  #  update_cache: yes
+  command: snap install --classic certbot
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: (CentOS/RHEL) Install certbot
+  yum:
+    name:
+      - epel-release
+      - certbot
+  when: ansible_facts['os_family'] == "RedHat"
+
+- name: (CentOS/RHEL) Install plugin
+  block:
+    - name: (CentOS/RHEL 6/7) Install plugin
+      yum:
+        name:
+          - python2-certbot-{{ plugin }}
+      when: ansible_facts['distribution_major_version'] is version('8', '!=')
+
+    - name: (CentOS/RHEL 8) Install plugin
+      yum:
+        name:
+          - python3-certbot-{{ plugin }}
+      when: ansible_facts['distribution_major_version'] is version('8', '==')
+  when:
+    - ansible_facts['os_family'] == "RedHat"
+    - plugin is defined
+    - (plugin == "nginx" or plugin == "apache")
+
+- name: Generate certificate
+  block:
+    - name: Generate configuration file
+      template:
+        src: letsencrypt.ini.j2
+        dest: "{{ ini_file }}"
+        mode: 0640
+    - name: Run Certbot
+      command: certbot {{ cmd }} -c {{ ini_file }} -n --agree-tos

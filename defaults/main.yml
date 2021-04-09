@@ -1,0 +1,3 @@
+---
+cmd: run
+ini_file: /tmp/letsencrypt.ini
