@@ -33,12 +33,24 @@
     - plugin is defined
     - (plugin == "nginx" or plugin == "apache")
 
+- name: Create temp config file
+  tempfile:
+    state: file
+    suffix: ini
+  register: tmpfile
+
 - name: Generate certificate
   block:
     - name: Generate configuration file
       template:
         src: letsencrypt.ini.j2
-        dest: "{{ ini_file }}"
+        dest: "{{ tmpfile.path }}"
         mode: 0640
     - name: Run Certbot
-      command: certbot {{ cmd }} -c {{ ini_file }} -n --agree-tos
+      command: certbot {{ cmd }} -c {{ tmpfile.path }} -n --agree-tos
+
+- name: Remove temp file
+  file:
+    path: "{{ tmpfile.path }}"
+    state: absent
+  when: tmpfile.path is defined
